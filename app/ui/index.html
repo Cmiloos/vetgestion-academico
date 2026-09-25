@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetGestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<style>
+/* ---------- agregados de la versión de escritorio ---------- */
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:9px;box-shadow:none}
+.btn.sm:hover{transform:none}
+.btn.danger{background:var(--red);box-shadow:0 6px 16px rgba(181,53,42,.25)}
+.btn.danger:hover{background:#962b22}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+.ok-ic.err{background:var(--red-bg);color:var(--red)}
+.ok-ic.warn{background:var(--amber-bg);color:var(--amber)}
+.qty{width:92px!important;text-align:center}
+.venta-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.venta-row label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.venta-tot{font-size:13px;color:var(--muted)}
+.venta-tot b{color:var(--text)}
+.acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+tbody tr.click{cursor:pointer}
+.otro{margin-top:8px}
+.otro[hidden]{display:none}
+details.mas{margin:4px 0 16px;border:1px solid var(--border);border-radius:11px;padding:12px 14px}
+details.mas summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--primary-dk)}
+details.mas[open] summary{margin-bottom:14px}
+textarea{width:100%;font:inherit;padding:10px 14px;border:1px solid var(--border);border-radius:11px;min-height:64px;resize:vertical;color:var(--text)}
+textarea:focus{outline:2px solid var(--primary);outline-offset:-1px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.card-head .card-t{margin:0}
+.card-head input{max-width:260px;padding:9px 12px}
+.filtros{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.filtros select,.filtros input{max-width:260px}
+.dlg-in{margin:18px 0 6px;text-align:center}
+.dlg-in input{max-width:160px;text-align:center;font-size:18px;font-weight:700}
+.dlg-btns{display:flex;gap:10px;margin-top:18px}
+.dlg-btns .btn{flex:1}
+.csv-tbl{margin:16px 0;text-align:left;font-size:13px}
+.csv-tbl td,.csv-tbl th{padding:8px 10px}
+.csv-err{color:var(--red);font-size:12.5px;text-align:left;margin:0 0 10px}
+.side-foot .sw.xl{margin-top:9px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cargando{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;font-weight:600;color:var(--muted)}
+.cargando[hidden]{display:none}
+.mt{margin-top:22px}
+.gate-logo{display:block;width:230px;max-width:70%;margin:0 0 28px;mix-blend-mode:multiply}
+.side-logo{background:#fff;border-radius:12px;padding:10px 14px;margin:0 4px 16px;display:flex;justify-content:center}
+.side-logo img{width:100%;max-width:170px;display:block}
+.ocupado{position:fixed;inset:0;z-index:90;cursor:progress}
+.ocupado[hidden]{display:none}
+.ocupado-box{position:absolute;top:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--sidebar);color:#fff;font-weight:600;font-size:13px;padding:11px 18px;border-radius:12px;box-shadow:var(--sh-3)}
+.spin{width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;animation:gira .7s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.sync{position:fixed;right:22px;bottom:22px;z-index:80;display:flex;align-items:center;gap:9px;background:var(--sidebar);color:#fff;font-size:12.5px;font-weight:600;padding:9px 15px;border-radius:11px;box-shadow:var(--sh-2)}
+.sync[hidden]{display:none}
+.sync.ok{background:var(--primary)}
+.sync.ok .spin{border-color:#fff;animation:none;width:8px;height:8px;background:#fff}
+.metric.link,.alert.link{cursor:pointer}
+.metric .ver{font-size:12px;font-weight:700;margin-top:10px;opacity:.75;transition:opacity .15s}
+.metric.link:hover .ver{opacity:1}
+.lista-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.lista-vacia{text-align:center;padding:40px 20px;color:var(--muted)}
+.lista-vacia b{display:block;color:var(--primary-dk);font-size:15px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="cargando" id="cargando">Abriendo la base de datos…</div>
+
+<!-- PANTALLA DE INICIO -->
+<div class="gate" id="gate">
+  <aside class="gate-art">
+    <div class="brand-big">
+      <span class="mk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <div><div class="nm">VetGestión</div><div class="sub">Control de medicamentos</div></div>
+    </div>
+    <h1 class="gate-h">La farmacia, <em>bajo control</em>.</h1>
+    <ul class="gate-feat">
+      <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d9e75" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Stock y precios siempre al día</li>
+      <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d9e75" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Alertas de vencimiento antes de vender</li>
+      <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d9e75" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Aumentos por laboratorio en segundos</li>
+    </ul>
+    <div class="gate-foot" id="gateFoot">Uso interno del local</div>
+  </aside>
+
+  <main class="gate-main">
+    <div class="gate-box">
+      <img src="neozoo.png" class="gate-logo" alt="NeoZoo · Pet shop, pet love">
+      <h2 id="gate-q">¿Quién está usando el sistema?</h2>
+      <p class="gate-sub">Elegí tu perfil para entrar al sistema.</p>
+      <div class="choices" id="choices">
+        <button class="choice" onclick="chooseEmpleado()">
+          <span class="ci"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#0f6e56" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+          <span class="ct"><span class="cn">Empleado</span><span class="cd">Consultar, vender y ver la tabla</span></span>
+          <span class="arw"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        </button>
+        <button class="choice" onclick="askPw()">
+          <span class="ci"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#0f6e56" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+          <span class="ct"><span class="cn">Fátima</span><span class="cd">Administración · con contraseña</span></span>
+          <span class="arw"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        </button>
+      </div>
+      <div id="pwbox">
+        <h3>Ingresar como Fátima</h3>
+        <p>Escribí la contraseña para acceder a la administración.</p>
+        <input type="password" id="pw" placeholder="Contraseña" onkeydown="if(event.key==='Enter')tryPw()">
+        <div id="pwerr">La contraseña no es correcta.</div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn" onclick="tryPw()">Ingresar</button>
+          <button class="btn ghost" onclick="backGate()">Volver</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- APLICACIÓN -->
+<div class="app" id="app" style="display:none">
+  <aside class="side">
+    <div class="brand">
+      <span class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <div><div class="nm">VetGestión</div><div class="sub">Control de medicamentos</div></div>
+    </div>
+    <div class="side-logo"><img src="neozoo.png" alt="NeoZoo"></div>
+    <nav class="nav" id="nav">
+      <button data-s="panel" data-role="vet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Panel</button>
+      <button data-s="buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Buscar y vender</button>
+      <button data-s="tabla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Tabla de productos</button>
+      <button data-s="precios" data-role="vet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2a2 2 0 0 1-.6-1.4V4a1 1 0 0 1 1-1h7.9a2 2 0 0 1 1.4.6l7.5 7.5a2 2 0 0 1 0 2.3Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>Actualizar precios</button>
+      <button data-s="admin" data-role="vet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Administración</button>
+      <button data-s="movs" data-role="vet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Movimientos</button>
+    </nav>
+    <div class="side-foot">
+      <div class="u"><span class="av" id="av">F</span><div><div class="un" id="un">Fátima</div><div class="ur" id="ur">Administradora</div></div></div>
+      <button class="sw xl" id="btnExcel" onclick="abrirBase()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg><span id="btnExcelTxt">Abrir base de datos (Excel)</span></button>
+      <button class="sw" onclick="backGate()">Cambiar usuario</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div><h1 id="ttl">Panel</h1><p id="sub2">Estado general de un vistazo</p></div>
+      <div class="modes" id="modes" style="display:none"><button class="on" data-m="consultar">Consultar</button><button data-m="vender">Vender</button></div>
+    </div>
+
+    <!-- PANEL -->
+    <section class="screen" id="s-panel">
+      <div class="hero">
+        <div class="hero-txt">
+          <div class="hero-kicker" id="heroDate">—</div>
+          <h2 id="heroHi">Buen día, Fátima</h2>
+          <p id="heroTxt"></p>
+          <button class="btn btn-light" onclick="go('buscar')">Ir a buscar y vender</button>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n" id="heroVentas">$0</div>
+          <div class="hero-stat-l" id="heroVentasL">vendido hoy</div>
+        </div>
+      </div>
+      <div class="grid4" id="metricas"></div>
+      <div class="sec-t">Necesita atención</div>
+      <div id="alertas"></div>
+      <div class="sec-t">Resumen del catálogo</div>
+      <div class="two-col">
+        <div class="card"><div class="card-t">Productos por categoría</div><div id="catBars"></div></div>
+        <div class="card"><div class="card-t">Actividad reciente</div><div id="actividad"></div></div>
+      </div>
+    </section>
+
+    <!-- BUSCAR Y VENDER -->
+    <section class="screen" id="s-buscar">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="q" placeholder="Buscar por nombre, droga o laboratorio…" autocomplete="off">
+        <div class="sug" id="sug" hidden></div>
+      </div>
+      <div id="ficha"></div>
+      <div class="sec-t">Todos los productos</div>
+      <div class="prod-grid" id="grid"></div>
+    </section>
+
+    <!-- TABLA -->
+    <section class="screen" id="s-tabla">
+      <div class="stat-strip" id="statStrip"></div>
+      <div class="search" style="max-width:380px;margin-bottom:18px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="tq" placeholder="Filtrar productos…" autocomplete="off">
+      </div>
+      <div class="tablecard">
+        <table>
+          <thead><tr><th></th><th>Código</th><th>Producto</th><th>Laboratorio</th><th>Categoría</th><th class="num">Precio</th><th class="num">Stock</th><th>Vence</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PRECIOS -->
+    <section class="screen" id="s-precios">
+      <div class="side-grid">
+      <div class="card">
+        <div class="step">
+          <span class="step-n">01</span>
+          <div class="step-b">
+            <div class="step-t">Elegí el alcance</div>
+            <div class="step-d">Un laboratorio completo, o solo una categoría dentro de él.</div>
+            <div class="row2">
+              <div class="field"><label>Laboratorio</label><select id="pl"></select></div>
+              <div class="field" style="margin-bottom:0"><label>Categoría (opcional)</label><select id="pc"></select></div>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">02</span>
+          <div class="step-b">
+            <div class="step-t">Definí el aumento</div>
+            <div class="step-d">Se aplica sobre el precio de venta actual. Usá un número negativo para una rebaja.</div>
+            <div class="field" style="max-width:220px;margin-bottom:0"><label>Porcentaje de aumento</label><input type="text" id="pp" value="5" inputmode="decimal" autocomplete="off" placeholder="Ej: 5 o 7,5"></div>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">03</span>
+          <div class="step-b">
+            <div class="step-t">Revisá y confirmá</div>
+            <div class="step-d">Nada se modifica hasta que confirmes este paso.</div>
+            <div class="preview" id="prev"></div>
+            <div style="display:flex;gap:10px;margin-top:18px">
+              <button class="btn" onclick="aplicarAumento()">Aplicar aumento</button>
+              <button class="btn ghost" onclick="resetPrecios()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-t">O importar desde un archivo</div>
+          <div class="drop foto-zona" id="csvZona">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#68736e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <div><b>Arrastrá acá el archivo CSV</b><div style="margin-top:4px">o hacé clic para elegirlo</div></div>
+          </div>
+          <input type="file" id="csvInput" accept=".csv,.txt,text/csv" hidden>
+          <p class="note">Una fila por laboratorio: <b>laboratorio;porcentaje;categoría</b> (la categoría es opcional). Ej: <code>PetLab;8</code>. El sistema muestra la vista previa y pide confirmación antes de aplicar.</p>
+        </div>
+        <div class="card">
+          <div class="card-t">Últimos aumentos</div>
+          <div id="histAumentos"></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ADMINISTRACIÓN -->
+    <section class="screen" id="s-admin">
+      <div class="side-grid">
+      <div class="card">
+        <div class="card-t" id="formT">Alta de producto</div>
+        <div class="row2">
+          <div class="field"><label>Nombre del producto</label><input type="text" id="fNombre" placeholder="Ej: Meloxivet 15 ml"></div>
+          <div class="field"><label>Droga / principio activo</label><input type="text" id="fDroga" placeholder="Ej: Meloxicam"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Laboratorio</label><select id="fLab"></select><input type="text" id="fLabOtro" class="otro" placeholder="Nombre del laboratorio nuevo" hidden></div>
+          <div class="field"><label>Categoría</label><select id="fCat"></select><input type="text" id="fCatOtro" class="otro" placeholder="Nombre de la categoría nueva" hidden></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Presentación</label><select id="fPres"><option>Comprimido</option><option>Pipeta</option><option>Inyectable</option><option>Jarabe</option><option>Loción</option><option>Gotas</option><option>Polvo</option></select></div>
+          <div class="field"><label>Especie</label><select id="fEsp"><option>Perro</option><option>Gato</option><option>Perro y gato</option></select></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Precio de venta</label><input type="number" id="fPrecio" placeholder="0" min="0"></div>
+          <div class="field"><label>Stock</label><input type="number" id="fStock" placeholder="0" min="0"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Concentración</label><input type="text" id="fConc" placeholder="Ej: 15 mg/ml"></div>
+          <div class="field"><label>Vencimiento</label><input type="text" id="fVenc" placeholder="MM/AAAA"></div>
+        </div>
+        <div class="field"><label>Código / SKU</label><input type="text" id="fCod" placeholder="Se genera solo si lo dejás vacío"></div>
+        <details class="mas">
+          <summary>Datos de la ficha (opcional)</summary>
+          <div class="row2">
+            <div class="field"><label>Vía de administración</label><input type="text" id="fVia" placeholder="Ej: Oral"></div>
+            <div class="field"><label>Dosis sugerida</label><input type="text" id="fDosis" placeholder="Ej: 0,1 mg/kg una vez al día"></div>
+          </div>
+          <div class="field"><label>Lote</label><input type="text" id="fLote" placeholder="Ej: L-2604-M"></div>
+          <div class="field"><label>Composición</label><textarea id="fComp"></textarea></div>
+          <div class="field"><label>Indicaciones</label><textarea id="fInd"></textarea></div>
+          <div class="field" style="margin-bottom:0"><label>Conservación</label><textarea id="fCons"></textarea></div>
+        </details>
+        <p class="aviso" id="fAviso" hidden></p>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button class="btn" id="btnGuardar" onclick="guardarProducto()">Guardar producto</button>
+          <button class="btn ghost" id="btnLimpiar" onclick="limpiarForm()">Limpiar formulario</button>
+        </div>
+        <p class="note">Solo Fátima puede dar de alta, editar precios o dar de baja productos. Todo queda guardado en la base de datos.</p>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-t">Imagen del producto</div>
+          <div class="drop foto-zona" id="fotoZona">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#68736e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            <div><b>Arrastrá una imagen acá</b><div style="margin-top:4px">o hacé clic para cargar una foto</div></div>
+          </div>
+          <div class="foto-prev" id="fotoPrev" hidden>
+            <div class="ph"><img id="fotoImg" alt="Vista previa del producto"></div>
+            <div class="foto-acc">
+              <div class="foto-ok">Vista previa cargada</div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button class="btn ghost" onclick="document.getElementById('fotoInput').click()">Cambiar</button>
+                <button class="btn ghost" onclick="quitarFoto()">Quitar</button>
+              </div>
+            </div>
+          </div>
+          <input type="file" id="fotoInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        </div>
+        <div class="card">
+          <div class="card-t">Antes de dar de alta</div>
+          <ul class="help">
+            <li><span>1</span><div><b>Revisá que no esté cargado.</b> Buscalo en la lista de abajo antes de crearlo de nuevo.</div></li>
+            <li><span>2</span><div><b>Usá el nombre del envase.</b> Incluí la concentración o el volumen, como “Meloxivet 15 ml”.</div></li>
+            <li><span>3</span><div><b>Cargá el precio de venta,</b> no el de costo. Los aumentos por laboratorio se aplican sobre este valor.</div></li>
+            <li><span>4</span><div><b>Cargá la foto del envase.</b> Se ve en la tarjeta del producto y en su ficha ampliada.</div></li>
+          </ul>
+        </div>
+        <div class="card mt">
+          <div class="card-head"><div class="card-t">Base de datos</div><span id="bdEstado"></span></div>
+          <p class="note" id="bdTexto" style="margin:0 0 14px"></p>
+          <div id="bdConectar">
+            <div class="field" style="margin-bottom:10px"><label>URL de Google Sheets (Apps Script)</label>
+              <input type="text" id="bdUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm" onclick="conectarSheets()">Conectar</button>
+              <button class="btn ghost sm" onclick="verInstrucciones()">Cómo conectarla</button>
+            </div>
+          </div>
+          <div id="bdConectado" hidden>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm" onclick="abrirBase()">Abrir planilla</button>
+              <button class="btn ghost sm" onclick="verInstrucciones()">Ver código del script</button>
+              <button class="btn ghost sm" style="color:var(--red)" onclick="desconectarSheets()">Volver a Excel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head">
+          <div class="card-t">Productos del catálogo</div>
+          <input type="text" id="aq" placeholder="Filtrar…" autocomplete="off">
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th></th><th>Código</th><th>Producto</th><th class="num">Precio</th><th class="num">Stock</th><th>Vence</th><th style="text-align:right">Acciones</th></tr></thead>
+            <tbody id="abody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MOVIMIENTOS -->
+    <section class="screen" id="s-movs">
+      <div class="stat-strip" id="movStrip"></div>
+      <div class="filtros">
+        <select id="mTipo"><option value="">Todos los movimientos</option></select>
+        <input type="text" id="mq" placeholder="Buscar producto o detalle…" autocomplete="off">
+      </div>
+      <div class="tablecard">
+        <table>
+          <thead><tr><th style="width:auto">Fecha</th><th>Tipo</th><th>Producto / laboratorio</th><th class="num">Cant.</th><th class="num">Importe</th><th>Detalle</th><th>Usuario</th></tr></thead>
+          <tbody id="mbody"></tbody>
+        </table>
+      </div>
+    </section>
+    <!-- LISTA DESDE EL PANEL (vencidos, próximos, stock bajo, activos) -->
+    <section class="screen" id="s-lista">
+      <div class="lista-top">
+        <button class="btn ghost sm" onclick="go('panel')">← Volver al panel</button>
+        <span class="pill p-blue" id="listaCant"></span>
+      </div>
+      <div class="tablecard">
+        <table>
+          <thead id="lhead"></thead>
+          <tbody id="lbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden></div>
+<div class="sync" id="sync" hidden><span class="spin"></span><span id="syncTxt">Guardando…</span></div>
+<div class="ocupado" id="ocupado" hidden><div class="ocupado-box"><span class="spin"></span><span id="ocupadoTxt">Guardando…</span></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
