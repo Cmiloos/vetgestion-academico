@@ -6,6 +6,12 @@ JavaScript corriendo dentro de una ventana propia (sin barra del navegador).
 
 > Proyecto académico. Los datos que trae son de demostración, no son de un local real.
 
+## Solo quiero verlo funcionando
+
+Descargá **[VetGestion.exe](https://github.com/Cmiloos/vetgestion-academico/releases/latest)**
+desde la última versión publicada, doble clic y listo. No se instala nada y no necesita
+Python. Arranca con datos de demostración.
+
 ## Cómo levantarlo
 
 Necesitás **Python 3.12** y, en Windows, el runtime de Edge WebView2 (ya viene con
